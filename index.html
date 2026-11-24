@@ -1,0 +1,629 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#090b18">
+<title>AZIZ GAMES | Arcade</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800;900&display=swap');
+:root{--bg:#090b18;--panel:#14192c;--purple:#9864ff;--cyan:#40e0d0;--white:#f5f4ff}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#202044 0%,#090b18 65%);color:var(--white);font-family:Vazirmatn,Arial,sans-serif;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:0;color:white}
+.top{padding:24px 18px 18px;text-align:center;background:linear-gradient(130deg,#17132e,#26184a);border-bottom:1px solid #44316a}
+.logo{font-size:clamp(32px,8vw,55px);font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,#58e6dd,#a982ff,#ff79d4);background-clip:text;color:transparent}
+.tag{color:#b9b3d6;font-size:13px}
+.wrap{max-width:1050px;margin:auto;padding:18px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.section-head h2{font-size:20px}
+.pill{border:1px solid #514174;border-radius:30px;padding:7px 13px;color:#cbb8ff;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.card{position:relative;overflow:hidden;text-align:right;background:linear-gradient(145deg,#1b2039,#111426);border:1px solid #303754;border-radius:17px;padding:16px;min-height:145px;transition:.2s}
+.card:active{transform:scale(.97)}
+.card:before{content:"";position:absolute;width:100px;height:100px;background:var(--glow);filter:blur(55px);right:-20px;top:-20px;opacity:.55}
+.card>*{position:relative}
+.card .emoji{font-size:35px}
+.card h3{font-size:15px;margin:8px 0 2px}
+.card p{font-size:11px;color:#a7aac4;margin:0}
+.play-label{display:inline-block;margin-top:12px;font-size:11px;color:#d2c2ff}
+#gameView{display:none}
+.gamebar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.gamebar h2{font-size:18px;margin:0}
+.smallbtn{background:#242a43;border:1px solid #40496b;border-radius:10px;padding:9px 13px}
+.stage{background:#080c19;border:1px solid #3b3d68;border-radius:17px;padding:9px;box-shadow:0 15px 45px #0008}
+canvas{display:block;width:100%;max-width:480px;height:auto;margin:auto;border-radius:10px;touch-action:none;background:#0c1225}
+.stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+.stat{background:#191d32;border:1px solid #343958;border-radius:10px;padding:7px 14px;font-size:13px}
+.stat b{color:#7ce6df}
+.controls{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin:13px 0}
+.ctrl{min-width:60px;min-height:48px;border-radius:13px;background:linear-gradient(145deg,#6543ac,#38245f);font-size:19px;box-shadow:0 4px 0 #24153f;touch-action:none}
+.ctrl:active{transform:translateY(3px);box-shadow:none}
+.message{text-align:center;color:#aeb3d0;font-size:12px;min-height:24px}
+.overlay{position:fixed;inset:0;background:#050612d9;display:none;align-items:center;justify-content:center;padding:20px;z-index:5}
+.modal{background:#191c34;border:1px solid #61518c;border-radius:20px;padding:25px;text-align:center;width:min(340px,100%);box-shadow:0 15px 60px #0009}
+.modal h2{color:#d8c2ff}
+.mainbtn{background:linear-gradient(100deg,#7652d5,#a54fd1);padding:12px 23px;border-radius:12px;font-weight:800;margin:5px}
+.secondary{background:#303650;padding:12px 18px;border-radius:12px;margin:5px}
+footer{text-align:center;padding:30px 10px;color:#727995;font-size:12px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(3,1fr)}.wrap{padding:25px}}
+</style>
+</head>
+<body>
+<header class="top">
+<div class="logo">AZIZ GAMES</div>
+<div class="tag">YOUR ARCADE · YOUR RULES</div>
+</header>
+
+<main class="wrap">
+<section id="home">
+<div class="section-head">
+<h2>🎮 انتخاب بازی</h2>
+<span class="pill">10 ARCADE GAMES</span>
+</div>
+<div class="grid" id="grid"></div>
+</section>
+
+<section id="gameView">
+<div class="gamebar">
+<h2 id="gameName">GAME</h2>
+<div>
+<button class="smallbtn" onclick="pauseGame()">Ⅱ توقف</button>
+<button class="smallbtn" onclick="goHome()">⌂ منو</button>
+</div>
+</div>
+<div class="stage">
+<canvas id="c" width="420" height="600"></canvas>
+</div>
+<div class="stats">
+<div class="stat">امتیاز: <b id="score">0</b></div>
+<div class="stat">رکورد: <b id="best">0</b></div>
+<div class="stat">مرحله: <b id="level">1</b></div>
+</div>
+<div class="controls" id="controls"></div>
+<div class="message" id="message">برای شروع آماده‌ای؟</div>
+</section>
+</main>
+<footer>AZIZ GAMES © 2026 · PLAY SMART</footer>
+
+<div class="overlay" id="overlay">
+<div class="modal">
+<h2 id="modalTitle">بازی متوقف شد</h2>
+<p id="modalText">هر وقت آماده بودی ادامه بده.</p>
+<button class="mainbtn" id="modalMain">ادامه بازی</button>
+<button class="secondary" onclick="goHome()">بازگشت به منو</button>
+</div>
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const canvas=$("c"),ctx=canvas.getContext("2d");
+const W=420,H=600;
+const games=[
+["🐍","SNAKE","مار کلاسیک","#42e6a4","snake"],
+["🏎️","NEON RACE","مسابقه سرعت"," #ff8b54","race"],
+["⚽","PENALTY PRO","ضربات پنالتی"," #55d9a9","football"],
+["🚀","SPACE DEFENDER","دفاع فضایی"," #8a78ff","space"],
+["🏃","NEON RUNNER","دونده بی‌پایان"," #ffce64","runner"],
+["🧱","BLOCK MASTER","چیدن بلوک‌ها"," #5dcfff","blocks"],
+["🏒","AIR HOCKEY","هاکی سرعتی"," #55c9ff","hockey"],
+["🧠","MEMORY MATCH","حافظه تصویری"," #e88bff","memory"],
+["🧨","BRICK BREAKER","شکستن آجرها"," #ff7c91","breaker"],
+["🎳","BOWLING CLUB","بولینگ"," #ffc66d","bowling"]
+];
+let mode="",score=0,level=1,best=0,running=false,paused=false,ended=false;
+let last=0,raf=0,world={},keys={},sound=true,audio=null;
+const grid=$("grid");
+games.forEach(g=>{
+ const el=document.createElement("button");
+ el.className="card";el.style.setProperty("--glow",g[3].trim());
+ el.innerHTML=`<div class="emoji">${g[0]}</div><h3>${g[1]}</h3><p>${g[2]}</p><span class="play-label">▶ شروع بازی</span>`;
+ el.onclick=()=>start(g[4]);
+ grid.appendChild(el);
+});
+function random(a,b){return Math.random()*(b-a)+a}
+function randInt(a,b){return Math.floor(random(a,b+1))}
+function rect(x,y,w,h,color,r=0){
+ ctx.fillStyle=color;
+ if(r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+ else ctx.fillRect(x,y,w,h);
+}
+function circle(x,y,r,color){
+ ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+}
+function line(x,y,x2,y2,color,width=2){
+ ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();
+}
+function txt(t,x,y,size=20,color="#fff"){
+ ctx.fillStyle=color;ctx.font=`bold ${size}px Arial`;ctx.textAlign="center";ctx.fillText(t,x,y);
+}
+function background(color="#0c1428"){
+ rect(0,0,W,H,color);
+ for(let i=0;i<35;i++){
+  let x=(i*83)%W,y=(i*137)%H;
+  circle(x,y,1.2,"#ffffff25");
+ }
+}
+function updateStats(){
+ $("score").textContent=score;
+ $("best").textContent=best;
+ $("level").textContent=level;
+}
+function setScore(n){
+ score=Math.max(0,Math.floor(n));
+ if(score>best){
+  best=score;
+  localStorage.setItem("azg_"+mode,best);
+ }
+ updateStats();
+}
+function say(t){$("message").textContent=t}
+function start(name){
+ cancelAnimationFrame(raf);
+ mode=name;score=0;level=1;ended=false;paused=false;running=true;
+ best=Number(localStorage.getItem("azg_"+mode)||0);
+ $("home").style.display="none";
+ $("gameView").style.display="block";
+ $("gameName").textContent=games.find(g=>g[4]===name)[1];
+ $("overlay").style.display="none";
+ $("controls").innerHTML="";
+ keys={};
+ world={time:0};
+ initGame();
+ updateStats();
+ last=performance.now();
+ raf=requestAnimationFrame(loop);
+}
+function addControl(label,fn){
+ const b=document.createElement("button");
+ b.className="ctrl";b.textContent=label;
+ b.addEventListener("pointerdown",e=>{e.preventDefault();if(running&&!paused)fn()});
+ $("controls").appendChild(b);
+}
+function controlsFor(arr){
+ $("controls").innerHTML="";
+ arr.forEach(a=>addControl(a[0],a[1]));
+}
+function initGame(){
+ if(mode==="snake"){
+  world.snake=[{x:10,y:12},{x:9,y:12},{x:8,y:12}];
+  world.dir={x:1,y:0};world.next={x:1,y:0};
+  world.food={x:randInt(1,19),y:randInt(1,28)};
+  world.acc=0;
+  controlsFor([["⬆",()=>turn(0,-1)],["⬅",()=>turn(-1,0)],["⬇",()=>turn(0,1)],["➡",()=>turn(1,0)]]);
+ }
+ if(mode==="race"){
+  world.car=210;world.traffic=[];world.road=0;world.spawn=0;world.speed=260;
+  controlsFor([["◀",()=>world.car=Math.max(95,world.car-48)],["▶",()=>world.car=Math.min(325,world.car+48)]]);
+ }
+ if(mode==="football"){
+  world.keeper=210;world.shots=0;world.balls=[];world.wait=0;
+  controlsFor([["چپ",()=>shoot(125)],["وسط",()=>shoot(210)],["راست",()=>shoot(295)]]);
+  say("جهت شوت را انتخاب کن و دروازه‌بان را فریب بده!");
+ }
+ if(mode==="space"){
+  world.ship=210;world.bullets=[];world.enemies=[];world.spawn=0;world.cool=0;
+  controlsFor([["◀",()=>world.ship=Math.max(22,world.ship-28)],["● شلیک",fire],["▶",()=>world.ship=Math.min(398,world.ship+28)]]);
+ }
+ if(mode==="runner"){
+  world.player={x:210,y:475,vy:0,ground:true};world.obs=[];world.spawn=0;world.speed=260;
+  controlsFor([["پرش ⤴",jump]]);
+ }
+ if(mode==="blocks"){
+  world.board=Array.from({length:20},()=>Array(10).fill(0));
+  world.piece=newPiece();world.acc=0;
+  controlsFor([["◀",()=>movePiece(-1)],["↻",rotatePiece],["▶",()=>movePiece(1)],["⬇",dropPiece]]);
+ }
+ if(mode==="hockey"){
+  world.paddle=210;world.opp=210;
+  world.puck={x:210,y:300,vx:random(-100,100),vy:210};
+  controlsFor([["◀",()=>world.paddle=Math.max(65,world.paddle-35)],["▶",()=>world.paddle=Math.min(355,world.paddle+35)],["شوت",hockeyHit]]);
+ }
+ if(mode==="memory"){
+  const faces=["🍎","🍋","🍇","🍉","🍒","⭐","⚽","🚀"];
+  world.cards=[...faces,...faces].sort(()=>Math.random()-.5);
+  world.open=[];world.found=[];world.lock=false;
+  canvas.height=500;
+  controlsFor([["شروع دوباره",()=>start("memory")]]);
+  say("دو کارت یکسان را پیدا کن!");
+ }
+ if(mode==="breaker"){
+  world.ball={x:210,y:430,vx:170,vy:-230};
+  world.pad=210;world.bricks=[];
+  for(let r=0;r<6;r++)for(let col=0;col<8;col++)
+   world.bricks.push({x:9+col*51,y:65+r*29,on:true,hp:r<2?2:1});
+  controlsFor([["◀",()=>world.pad=Math.max(55,world.pad-35)],["▶",()=>world.pad=Math.min(365,world.pad+35)]]);
+ }
+ if(mode==="bowling"){
+  world.ball=null;world.pins=[];
+  for(let row=0;row<4;row++)for(let col=0;col<=row;col++)
+   world.pins.push({x:210+(col-row/2)*28,y:130+row*27,on:true});
+  world.throws=0;world.aim=210;
+  controlsFor([["◀",()=>world.aim=Math.max(140,world.aim-15)],["پرتاب",bowlThrow],["▶",()=>world.aim=Math.min(280,world.aim+15)]]);
+ }
+}
+function loop(now){
+ if(!running||paused)return;
+ let dt=Math.min((now-last)/1000,.035);last=now;
+ world.time+=dt;
+ update(dt);draw();
+ if(running&&!paused)raf=requestAnimationFrame(loop);
+}
+function finish(message){
+ if(ended)return;
+ ended=true;running=false;
+ $("modalTitle").textContent=message||"بازی تمام شد!";
+ $("modalText").textContent="امتیاز تو: "+score+" | رکورد: "+best;
+ $("modalMain").textContent="بازی دوباره";
+ $("modalMain").onclick=()=>start(mode);
+ $("overlay").style.display="flex";
+}
+function pauseGame(){
+ if(!running&&!paused)return;
+ paused=!paused;
+ if(paused){
+  cancelAnimationFrame(raf);
+  $("modalTitle").textContent="بازی متوقف شد";
+  $("modalText").textContent="هر وقت آماده بودی ادامه بده.";
+  $("modalMain").textContent="ادامه بازی";
+  $("modalMain").onclick=()=>{
+   paused=false;$("overlay").style.display="none";last=performance.now();raf=requestAnimationFrame(loop);
+  };
+  $("overlay").style.display="flex";
+ }else{
+  $("overlay").style.display="none";last=performance.now();raf=requestAnimationFrame(loop);
+ }
+}
+function goHome(){
+ running=false;paused=false;ended=true;cancelAnimationFrame(raf);
+ $("overlay").style.display="none";$("gameView").style.display="none";$("home").style.display="block";
+ canvas.height=600;
+}
+function turn(x,y){
+ if(x===-world.dir.x&&y===-world.dir.y)return;
+ world.next={x,y};
+}
+function newFood(){
+ let p;
+ do{p={x:randInt(1,19),y:randInt(1,28)}}while(world.snake.some(s=>s.x===p.x&&s.y===p.y));
+ return p;
+}
+function newPiece(){
+ const shapes=[
+ [[0,0],[1,0],[0,1],[1,1]],
+ [[0,0],[0,1],[0,2],[0,3]],
+ [[0,0],[1,0],[2,0],[1,1]],
+ [[1,0],[2,0],[0,1],[1,1]],
+ [[0,0],[1,0],[1,1],[2,1]]
+ ];
+ return {cells:shapes[randInt(0,shapes.length-1)].map(p=>[...p]),x:4,y:0};
+}
+function collisionPiece(p,dx=0,dy=0,cells=p.cells){
+ return cells.some(([x,y])=>{
+  let xx=p.x+x+dx,yy=p.y+y+dy;
+  return xx<0||xx>=10||yy>=20||(yy>=0&&world.board[yy][xx]);
+ });
+}
+function movePiece(dx){if(!collisionPiece(world.piece,dx,0))world.piece.x+=dx}
+function rotatePiece(){
+ let p=world.piece;
+ let rotated=p.cells.map(([x,y])=>[2-y,x]);
+ if(!collisionPiece(p,0,0,rotated))p.cells=rotated;
+}
+function dropPiece(){
+ let p=world.piece;
+ while(!collisionPiece(p,0,1))p.y++;
+ lockPiece();
+}
+function lockPiece(){
+ let p=world.piece;
+ p.cells.forEach(([x,y])=>{if(p.y+y>=0)world.board[p.y+y][p.x+x]=1});
+ let kept=world.board.filter(row=>row.some(v=>!v));
+ let removed=20-kept.length;
+ while(kept.length<20)kept.unshift(Array(10).fill(0));
+ world.board=kept;
+ if(removed)setScore(score+removed*100);
+ world.piece=newPiece();
+ if(collisionPiece(world.piece))finish("پایان بازی!");
+}
+function jump(){let p=world.player;if(p.ground){p.vy=-590;p.ground=false}}
+function fire(){if(world.cool<=0){world.bullets.push({x:world.ship,y:520});world.cool=.22;beep(600,.04)}}
+function shoot(x){
+ if(world.wait>0)return;
+ world.shots++;
+ let keeper=world.keeper;
+ let goal=Math.abs(x-keeper)>48;
+ if(goal){setScore(score+100);say("⚽ گل! عالی بود!");beep(700,.15)}
+ else{say("دروازه‌بان توپ را گرفت!");beep(180,.2)}
+ world.keeper=randInt(100,320);world.wait=.65;
+ if(world.shots>=10){setTimeout(()=>finish("پایان مسابقه"),400)}
+}
+function hockeyHit(){
+ let p=world.puck;
+ if(p.y>380&&Math.abs(p.x-world.paddle)<65){p.vy=-Math.abs(p.vy)-70;p.vx+=(p.x-world.paddle)*1.5}
+}
+function bowlThrow(){
+ if(world.ball||world.throws>=2)return;
+ world.ball={x:world.aim,y:525,vx:(210-world.aim)*.5,vy:-430};
+ world.throws++;
+}
+function update(dt){
+ if(mode==="snake"){
+  world.acc+=dt;
+  if(world.acc>.115){
+   world.acc=0;world.dir=world.next;
+   let h={x:world.snake[0].x+world.dir.x,y:world.snake[0].y+world.dir.y};
+   if(h.x<0||h.x>=21||h.y<0||h.y>=30||world.snake.some(p=>p.x===h.x&&p.y===h.y)){finish("مار به خودش خورد!");return}
+   world.snake.unshift(h);
+   if(h.x===world.food.x&&h.y===world.food.y){setScore(score+10);world.food=newFood();beep(800,.06)}
+   else world.snake.pop();
+  }
+ }
+ if(mode==="race"){
+  world.road+=world.speed*dt;world.spawn+=dt;
+  world.speed=260+score*1.4;
+  if(world.spawn>Math.max(.42,.9-score*.001)){world.spawn=0;world.traffic.push({x:[112,210,308][randInt(0,2)],y:-90})}
+  world.traffic.forEach(o=>o.y+=world.speed*dt);
+  world.traffic=world.traffic.filter(o=>o.y<680);
+  if(world.traffic.some(o=>Math.abs(o.x-world.car)<45&&o.y>425&&o.y<535)){finish("تصادف کردی!");return}
+  setScore(score+dt*5);
+ }
+ if(mode==="football"){
+  world.wait=Math.max(0,world.wait-dt);
+ }
+ if(mode==="space"){
+  world.spawn+=dt;world.cool=Math.max(0,world.cool-dt);
+  if(world.spawn>Math.max(.35,.9-score*.0005)){
+   world.spawn=0;world.enemies.push({x:random(25,395),y:-25,hp:1});
+  }
+  world.bullets.forEach(b=>b.y-=550*dt);
+  world.enemies.forEach(e=>e.y+=(130+level*9)*dt);
+  for(let e of world.enemies)for(let b of world.bullets){
+   if(!e.dead&&!b.dead&&Math.abs(e.x-b.x)<21&&Math.abs(e.y-b.y)<22){e.dead=b.dead=true;setScore(score+15);beep(500,.04)}
+  }
+  world.bullets=world.bullets.filter(b=>!b.dead&&b.y>0);
+  world.enemies=world.enemies.filter(e=>!e.dead&&e.y<630);
+  if(world.enemies.some(e=>Math.abs(e.x-world.ship)<23&&e.y>510)){finish("سفینه نابود شد!");return}
+  level=1+Math.floor(score/150);
+ }
+ if(mode==="runner"){
+  world.spawn+=dt;world.speed=280+score*.35;
+  if(world.spawn>Math.max(.45,1-score*.001)){world.spawn=0;world.obs.push({x:random(75,345),y:-35,w:35})}
+  let p=world.player;p.y+=p.vy*dt;p.vy+=1450*dt;
+  if(p.y>=475){p.y=475;p.vy=0;p.ground=true}
+  world.obs.forEach(o=>o.y+=world.speed*dt);
+  world.obs=world.obs.filter(o=>o.y<630);
+  if(world.obs.some(o=>Math.abs(o.x-p.x)<35&&Math.abs(o.y-p.y)<43)){finish("برخورد کردی!");return}
+  setScore(score+dt*8);
+ }
+ if(mode==="blocks"){
+  world.acc+=dt;
+  if(world.acc>.65){world.acc=0;if(!collisionPiece(world.piece,0,1))world.piece.y++;else lockPiece()}
+ }
+ if(mode==="hockey"){
+  let p=world.puck;p.x+=p.vx*dt;p.y+=p.vy*dt;
+  world.opp+=(p.x-world.opp)*Math.min(1,dt*2.5);
+  if(p.x<28||p.x>392)p.vx*=-1;
+  if(p.y<35){p.vy=Math.abs(p.vy);setScore(score+1)}
+  if(p.y>570){p.x=210;p.y=300;p.vy=220;p.vx=random(-130,130)}
+  if(p.y>380&&p.y<440&&Math.abs(p.x-world.paddle)<45&&p.vy>0){p.vy=-Math.abs(p.vy);p.vx+=(p.x-world.paddle)*2}
+  if(p.y<125&&p.y>80&&Math.abs(p.x-world.opp)<45&&p.vy<0)p.vy=Math.abs(p.vy);
+ }
+ if(mode==="breaker"){
+  let b=world.ball;b.x+=b.vx*dt;b.y+=b.vy*dt;
+  if(b.x<10||b.x>410)b.vx*=-1;
+  if(b.y<10)b.vy=Math.abs(b.vy);
+  if(b.y>575){finish("توپ از دست رفت!");return}
+  if(b.y>545&&b.y<565&&Math.abs(b.x-world.pad)<60){b.vy=-Math.abs(b.vy);b.vx+=(b.x-world.pad)*2.4}
+  world.bricks.forEach(o=>{
+   if(o.on&&b.x>o.x&&b.x<o.x+47&&b.y>o.y&&b.y<o.y+20){
+    o.hp--;if(o.hp<=0){o.on=false;setScore(score+10)}
+    b.vy*=-1;
+   }
+  });
+  if(world.bricks.every(o=>!o.on))finish("همه آجرها شکستند!");
+ }
+ if(mode==="bowling"){
+  let b=world.ball;
+  if(b){
+   b.x+=b.vx*dt;b.y+=b.vy*dt;b.vy+=260*dt;
+   world.pins.forEach(p=>{
+    if(p.on&&Math.hypot(p.x-b.x,p.y-b.y)<24){p.on=false;setScore(score+10);beep(350,.06)}
+   });
+   if(b.y>590||b.x<10||b.x>410){world.ball=null;if(world.throws>=2)finish("پایان بولینگ!")}
+  }
+ }
+}
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ if(mode==="snake")drawSnake();
+ if(mode==="race")drawRace();
+ if(mode==="football")drawFootball();
+ if(mode==="space")drawSpace();
+ if(mode==="runner")drawRunner();
+ if(mode==="blocks")drawBlocks();
+ if(mode==="hockey")drawHockey();
+ if(mode==="memory")drawMemory();
+ if(mode==="breaker")drawBreaker();
+ if(mode==="bowling")drawBowling();
+}
+function drawSnake(){
+ background("#081b1b");
+ for(let x=0;x<21;x++)for(let y=0;y<30;y++)ctx.strokeStyle="#ffffff0a",ctx.strokeRect(x*20,y*20,20,20);
+ circle(world.food.x*20+10,world.food.y*20+10,8,"#ff577d");
+ world.snake.forEach((p,i)=>rect(p.x*20+2,p.y*20+2,16,16,i?"#31cba1":"#b7ff70",5));
+}
+function drawRace(){
+ background("#145a3d");
+ rect(65,0,290,H,"#30333c");
+ rect(77,0,4,H,"#ddd");rect(339,0,4,H,"#ddd");
+ for(let y=-50;y<H;y+=95){
+  let yy=(y+world.road%95);
+  rect(205,yy,8,48,"#e4e4e4");
+ }
+ world.traffic.forEach(o=>drawCar(o.x,o.y,"#f05b6b"));
+ drawCar(world.car,480,"#42d9ff");
+ txt("NEON RACE",210,35,17);
+}
+function drawCar(x,y,color){
+ rect(x-19,y-38,38,76,color,9);
+ rect(x-13,y-26,26,20,"#bceaff",5);
+ rect(x-16,y+16,32,10,"#222",4);
+ rect(x-23,y-23,5,15,"#111");rect(x+18,y-23,5,15,"#111");
+}
+function drawFootball(){
+ background("#147b48");
+ rect(30,30,360,540,"#18894e");
+ for(let y=50;y<570;y+=100)rect(30,y,360,50,"#ffffff08");
+ ctx.strokeStyle="#e8fff0";ctx.lineWidth=3;ctx.strokeRect(75,35,270,115);
+ ctx.strokeRect(125,35,170,65);
+ rect(150,20,120,14,"#eee");
+ circle(world.keeper,105,17,"#ffcf63");
+ rect(world.keeper-22,120,44,20,"#f4b84d",5);
+ circle(210,485,13,"#fff");
+ txt("PENALTY PRO",210,555,19);
+ txt("شوت‌ها: "+world.shots+"/10",210,585,14);
+}
+function drawSpace(){
+ background("#080b24");
+ for(let i=0;i<45;i++)circle((i*91)%W,(i*127+world.time*50)%H,1.5,"#ffffff99");
+ txt("▲",world.ship,550,38,"#57e7ff");
+ world.bullets.forEach(b=>rect(b.x-3,b.y,6,18,"#f8ef75",3));
+ world.enemies.forEach(e=>{circle(e.x,e.y,17,"#ff547d");circle(e.x-6,e.y-3,3,"white");circle(e.x+6,e.y-3,3,"white")});
+ txt("SPACE DEFENDER",210,30,16);
+}
+function drawRunner(){
+ background("#132039");
+ for(let x=20;x<W;x+=60)line(x,0,x,H,"#ffffff0b");
+ rect(0,520,W,80,"#244f43");
+ for(let x=0;x<W;x+=40)rect(x,540,22,4,"#9bc8a0");
+ let p=world.player;
+ circle(p.x,p.y-20,16,"#ffce76");rect(p.x-13,p.y-5,26,35,"#55d9ff",8);
+ line(p.x-5,p.y+25,p.x-14,p.y+44,"#ffce76",6);line(p.x+5,p.y+25,p.x+14,p.y+44,"#ffce76",6);
+ world.obs.forEach(o=>rect(o.x-17,o.y-20,34,40,"#ff6681",7));
+ txt("NEON RUNNER",210,35,17);
+}
+function drawBlocks(){
+ background("#10152c");
+ for(let y=0;y<20;y++)for(let x=0;x<10;x++){
+  let xx=85+x*25,yy=35+y*25;
+  ctx.strokeStyle="#ffffff12";ctx.strokeRect(xx,yy,24,24);
+  if(world.board[y][x])rect(xx+1,yy+1,22,22,"#9b6cff",4);
+ }
+ world.piece.cells.forEach(([x,y])=>{
+  if(y>=0)rect(86+(world.piece.x+x)*25,36+(world.piece.y+y)*25,22,22,"#48dfff",4);
+ });
+ txt("BLOCK MASTER",210,585,17);
+}
+function drawHockey(){
+ background("#103c64");
+ ctx.strokeStyle="#e5f6ff";ctx.lineWidth=3;ctx.strokeRect(15,15,390,570);
+ line(15,300,405,300,"#ffffff88",3);
+ ctx.beginPath();ctx.arc(210,300,48,0,Math.PI*2);ctx.stroke();
+ rect(145,15,130,12,"#ff6a83",4);rect(145,573,130,12,"#42dfff",4);
+ circle(world.opp,100,24,"#ff607a");
+ circle(world.paddle,500,25,"#43dfff");
+ circle(world.puck.x,world.puck.y,12,"white");
+}
+function drawMemory(){
+ background("#12162a");
+ world.cards.forEach((f,i)=>{
+  let x=17+(i%4)*98,y=75+Math.floor(i/4)*120;
+  let shown=world.open.includes(i)||world.found.includes(i);
+  rect(x,y,85,100,world.found.includes(i)?"#245d54":shown?"#514080":"#282e4b",12);
+  txt(shown?f:"?",x+42,y+62,shown?34:38);
+ });
+ txt("MEMORY MATCH",210,35,19);
+ txt("جفت‌های پیدا شده: "+world.found.length/2+"/8",210,565,17);
+}
+function drawBreaker(){
+ background("#11152c");
+ const colors=["#ff6380","#ffbd58","#5ad8c0","#8f7aff","#50b9ff","#ff8bd0"];
+ world.bricks.forEach((o,i)=>{if(o.on)rect(o.x,o.y,47,21,colors[Math.floor(i/8)],5)});
+ rect(world.pad-52,560,104,12,"#5be4ff",6);
+ circle(world.ball.x,world.ball.y,9,"#fff");
+}
+function drawBowling(){
+ background("#152b44");
+ rect(70,35,280,540,"#b68c61",12);
+ line(100,50,100,560,"#e6c99b");line(320,50,320,560,"#e6c99b");
+ world.pins.forEach(p=>{if(p.on){circle(p.x,p.y,11,"#f3f4f7");rect(p.x-4,p.y-8,8,15,"#e65e72",3)}});
+ if(world.ball)circle(world.ball.x,world.ball.y,14,"#48dfff");
+ else circle(world.aim,525,14,"#48dfff");
+ txt("BOWLING CLUB",210,25,17);
+ txt("پرتاب: "+world.throws+"/2",210,585,15);
+}
+function pointer(e){
+ if(!running||paused)return;
+ let r=canvas.getBoundingClientRect();
+ let x=(e.clientX-r.left)*W/r.width;
+ let y=(e.clientY-r.top)*H/r.height;
+ if(mode==="memory"){
+  let col=Math.floor((x-17)/98),row=Math.floor((y-75)/120),i=row*4+col;
+  if(col<0||col>3||row<0||row>3||world.lock||world.found.includes(i)||world.open.includes(i))return;
+  world.open.push(i);draw();
+  if(world.open.length===2){
+   world.lock=true;
+   let [a,b]=world.open;
+   if(world.cards[a]===world.cards[b]){
+    world.found.push(a,b);world.open=[];world.lock=false;setScore(world.found.length/2*20);
+    if(world.found.length===16)finish("برنده شدی!");
+   }else setTimeout(()=>{if(mode==="memory"){world.open=[];world.lock=false;draw()}},750);
+  }
+ }
+ if(mode==="breaker")world.pad=x;
+ if(mode==="bowling"&&!world.ball)world.aim=Math.max(140,Math.min(280,x));
+ if(mode==="football"&&y>300)shoot(x<140?125:x>280?295:210);
+}
+canvas.addEventListener("pointerdown",pointer);
+document.addEventListener("keydown",e=>{
+ if(!running||paused)return;
+ if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();
+ if(mode==="snake"){
+  if(e.key==="ArrowUp")turn(0,-1);if(e.key==="ArrowDown")turn(0,1);
+  if(e.key==="ArrowLeft")turn(-1,0);if(e.key==="ArrowRight")turn(1,0);
+ }
+ if(mode==="race"){
+  if(e.key==="ArrowLeft")world.car=Math.max(95,world.car-48);
+  if(e.key==="ArrowRight")world.car=Math.min(325,world.car+48);
+ }
+ if(mode==="space"){
+  if(e.key==="ArrowLeft")world.ship=Math.max(22,world.ship-25);
+  if(e.key==="ArrowRight")world.ship=Math.min(398,world.ship+25);
+  if(e.key===" ")fire();
+ }
+ if(mode==="runner"&&e.key===" ")jump();
+ if(mode==="blocks"){
+  if(e.key==="ArrowLeft")movePiece(-1);if(e.key==="ArrowRight")movePiece(1);
+  if(e.key==="ArrowDown")dropPiece();if(e.key==="ArrowUp")rotatePiece();
+ }
+ if(mode==="hockey"){
+  if(e.key==="ArrowLeft")world.paddle=Math.max(65,world.paddle-25);
+  if(e.key==="ArrowRight")world.paddle=Math.min(355,world.paddle+25);
+  if(e.key===" ")hockeyHit();
+ }
+ if(mode==="breaker"){
+  if(e.key==="ArrowLeft")world.pad=Math.max(55,world.pad-25);
+  if(e.key==="ArrowRight")world.pad=Math.min(365,world.pad+25);
+ }
+ if(mode==="bowling"){
+  if(e.key==="ArrowLeft")world.aim=Math.max(140,world.aim-10);
+  if(e.key==="ArrowRight")world.aim=Math.min(280,world.aim+10);
+  if(e.key===" ")bowlThrow();
+ }
+});
+function beep(freq=440,duration=.08){
+ if(!sound)return;
+ try{
+  audio=audio||new(window.AudioContext||window.webkitAudioContext)();
+  const osc=audio.createOscillator(),gain=audio.createGain();
+  osc.frequency.value=freq;gain.gain.value=.035;
+  osc.connect(gain);gain.connect(audio.destination);
+  osc.start();osc.stop(audio.currentTime+duration);
+ }catch(e){}
+}
+</script>
+</body>
+</html>
